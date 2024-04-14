@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <stack>
 
 struct Point
 {
@@ -40,6 +41,9 @@ public:
     void check_if_red_win();
     void check_if_blue_win();
     bool check_blue_route(int, int);
+    bool check_red_route(int i, int j);
+
+    void check_neighbours(std::stack<Point> &, int, int, char);
 
     template <typename T, typename P>
     T remove_if(T beg, T end, P pred)
