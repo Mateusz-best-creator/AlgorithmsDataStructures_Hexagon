@@ -3,6 +3,13 @@
 #include <vector>
 #include <string>
 
+struct Point
+{
+    int i, j;
+    Point(int row, int column)
+        : i(row), j(column) {}
+};
+
 class Game
 {
 private:
@@ -12,11 +19,7 @@ private:
     int red_pawns = 0, blue_pawns = 0;
     bool blue_player_win = false, red_player_win = false;
 
-protected:
-    struct Point
-    {
-        int row, column;
-    };
+    std::vector<Point> arleady_visited;
 
 public:
     Game() = default;
@@ -33,16 +36,23 @@ public:
     void check_correctness();
     void get_pawns_number();
 
+    bool isPointVisited(int i, int j);
     void check_if_red_win();
     void check_if_blue_win();
+    bool check_blue_route(int, int);
 
-    template<typename T, typename P>
+    template <typename T, typename P>
     T remove_if(T beg, T end, P pred)
     {
         T dest = beg;
-        for (T itr = beg;itr != end; ++itr)
+        for (T itr = beg; itr != end; ++itr)
             if (!pred(*itr))
                 *(dest++) = *itr;
         return dest;
     }
+
+    bool blue_pawn_top_right(int i, int j) { return i <= board.size() / 2 && j == board[i].size() - 1; }
+    bool blue_pawn_bottom_left(int i, int j) { return i >= board.size() / 2 && j == 0; }
+    bool red_pawn_top_left(int i, int j) { return i <= board.size() / 2 && j == 0; }
+    bool red_pawn_bottom_right(int i, int j) { return i >= board.size() / 2 && j == board[i].size() - 1; }
 };

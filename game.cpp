@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <limits>
+#include <stack>
 
 void Game::GameLoop()
 {
@@ -17,7 +18,7 @@ void Game::GameLoop()
 void Game::process_test_case()
 {
     get_board();
-    //print_board();
+    print_board();
     get_options();
     board.clear();
 }
@@ -63,11 +64,12 @@ void Game::get_options()
             {
                 check_if_red_win();
                 check_if_blue_win();
-                if (red_player_win || blue_player_win)
-                    std::cout << "YES\n";
+                if (red_player_win)
+                    std::cout << "YES RED\n";
+                else if (blue_player_win)
+                    std::cout << "YES BLUE\n";
                 else
                     std::cout << "NO";
-                
             }
         }
     }
@@ -84,7 +86,7 @@ void Game::get_board()
     {
         std::vector<char> characters;
         std::getline(std::cin, line);
-        
+
         if (!line.size())
         {
             if (previous_line_empty) // If both current and previous lines are empty
@@ -99,7 +101,7 @@ void Game::get_board()
         // Check if line starts with ---
         if (line.find("---") == 0 && !beginning)
             break;
-        for (size_t i = 0; i < line.size(); i++)
+        for (int i = 0; i < line.size(); i++)
         {
             if (line[i] == '<' && i + 1 < line.size())
             {
@@ -115,8 +117,6 @@ void Game::get_board()
         beginning = false;
     }
 }
-
-
 
 void Game::print_board()
 {
@@ -150,9 +150,9 @@ void Game::check_correctness()
 void Game::get_pawns_number()
 {
     red_pawns = blue_pawns = 0;
-    for (size_t i = 0; i < board.size(); i++)
+    for (int i = 0; i < board.size(); i++)
     {
-        for (size_t j = 0; j < board[i].size(); j++)
+        for (int j = 0; j < board[i].size(); j++)
         {
             if (board[i][j] == 'r')
                 red_pawns++;
@@ -162,12 +162,92 @@ void Game::get_pawns_number()
     }
 }
 
+bool Game::isPointVisited(int i, int j)
+{
+    for (const auto &p : arleady_visited)
+    {
+        if (p.i == i && p.j == j)
+            return true;
+    }
+    return false;
+}
+
 void Game::check_if_red_win()
 {
-
+    for (int i = 0; i < board.size(); i++)
+    {
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            if (board[i][j] == 'r')
+            {
+            }
+        }
+    }
 }
 
 void Game::check_if_blue_win()
 {
+    blue_player_win = false;
+    for (int i = 0; i < board.size(); i++)
+    {
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            if (board[i][j] == 'b' && !isPointVisited(i, j))
+            {
+                blue_player_win = check_blue_route(i, j);
+                if (blue_player_win)
+                    return;
+            }
+        }
+    }
+}
 
+/*
+    i -> row
+    j -> column
+*/
+bool Game::check_blue_route(int i, int j)
+{
+    bool is_top_right = false, is_bottom_left = false;
+
+    std::stack<Point> stack;
+    stack.push(Point(i, j));
+
+    while (!stack.empty())
+    {
+        Point point = stack.top();
+        stack.pop();
+        int row = point.i, column = point.j;
+
+        arleady_visited.push_back(Point(row, column));
+
+        if (blue_pawn_top_right(row, column))
+            is_top_right = true;
+        if (blue_pawn_bottom_left(row, column))
+            is_bottom_left = true;
+
+        if (is_top_right && is_bottom_left)
+            return true;
+
+        // Check all neighbours squares
+
+        // top top
+        if (row - 2 >= 0 && column - 1 >= 0 && board[row - 2][column - 1] == 'b' && !isPointVisited(row - 2, column - 1))
+            stack.push(Point(row - 2, column - 1));
+        // top left
+        if (row - 1 >= 0 && column - 1 >= 0 && board[row - 1][column - 1] == 'b' && !isPointVisited(row - 1, column - 1))
+            stack.push(Point(row - 2, column - 1));
+        // top right
+        if (row - 1 >= 0 && column >= 0 && column < board[row - 1].size() && board[row - 1][column] == 'b' && !isPointVisited(row - 1, column))
+            stack.push(Point(row - 1, column));
+        // bottom left
+        if (row + 1 < board.size() && column - 1 >= 0 && board[row + 1][column - 1] == 'b' && !isPointVisited(row + 1, column - 1))
+            stack.push(Point(row + 1, column - 1));
+        // bottom right
+        if (row + 1 < board.size() && column + 1 < board[row + 1].size() && board[row + 1][column + 1] == 'b' && !isPointVisited(row + 1, column + 1))
+            stack.push(Point(row + 1, column + 1));
+        // bottom bottom
+        if (row + 2 < board.size() && column + 1 < board[row + 2].size() && board[row + 2][column + 1] == 'b' && !isPointVisited(row + 2, column + 1))
+            stack.push(Point(row + 2, column + 1));
+    }
 }
