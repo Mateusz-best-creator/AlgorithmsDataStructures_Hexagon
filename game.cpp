@@ -57,26 +57,23 @@ void Game::get_options()
             std::cout << "NO\n";
         else
         {
-            if (height == 1 && board[0][0] == 'r')
-                std::cout << "YES\n";
-            else
+            check_if_red_win();
+            if (red_player_win)
             {
-                check_if_red_win();
-                if (red_player_win)
-                {
-                    std::cout << "YES RED\n";
-                    std::cin.clear();
-                    return;
-                }
-                check_if_blue_win();
-                if (blue_player_win)
-                {
-                    std::cout << "YES BLUE\n";
-                    std::cin.clear();
-                    return;
-                }
-                std::cout << "NO\n";
+                std::cout << "YES RED\n";
+                std::cin.clear();
+                red_player_win = false;
+                return;
             }
+            check_if_blue_win();
+            if (blue_player_win)
+            {
+                std::cout << "YES BLUE\n";
+                std::cin.clear();
+                blue_player_win = false;
+                return;
+            }
+            std::cout << "NO\n";
         }
     }
 
@@ -85,6 +82,7 @@ void Game::get_options()
 
 void Game::get_board()
 {
+    arleady_visited.clear();
     std::string line;
     bool beginning = true, previous_line_empty = false;
 
@@ -235,7 +233,10 @@ bool Game::check_blue_route(int i, int j)
             is_bottom_left = true;
 
         if (is_top_right && is_bottom_left)
+        {
+            
             return true;
+        }
 
         // Check all neighbours squares
         check_neighbours(stack, row, column, 'b');
@@ -249,7 +250,6 @@ bool Game::check_red_route(int i, int j)
 
     std::stack<Point> stack;
     stack.push(Point(i, j));
-
     while (!stack.empty())
     {
         Point point = stack.top();
@@ -264,7 +264,10 @@ bool Game::check_red_route(int i, int j)
             is_bottom_right = true;
 
         if (is_bottom_right && is_top_left)
+        {
+            
             return true;
+        }
 
         // Check all neighbours squares
         check_neighbours(stack, row, column, 'r');
@@ -276,8 +279,9 @@ void Game::check_neighbours(std::stack<Point> &stack, int row, int column, char 
 {
     using std::cout;
     using std::endl;
-
-    // ok
+    //int init_size = stack.size();
+    
+    // middle row
     if (row == board.size() / 2)
     {
         // top top
@@ -343,8 +347,7 @@ void Game::check_neighbours(std::stack<Point> &stack, int row, int column, char 
             stack.push(Point(row + 2, column - 1));
     }
 
-    // not ok
-    if (row < board.size() / 2)
+    else if (row < board.size() / 2)
     {
         // top top
         if (row - 2 >= 0 && column - 1 < board[row - 2].size() && column - 1 >= 0 && board[row - 2][column - 1] == ch && !isPointVisited(row - 2, column - 1))
@@ -387,4 +390,9 @@ void Game::check_neighbours(std::stack<Point> &stack, int row, int column, char 
         if (row + 2 < board.size() && column - 1 >= 0 && column - 1 < board[row + 2].size() && board[row + 2][column - 1] == ch && !isPointVisited(row + 2, column - 1))
             stack.push(Point(row + 2, column - 1));
     }
+    int new_size = stack.size();
+    /*if (new_size != init_size)
+    {
+        std::cout << "Point : " << stack.top().i << ", " << stack.top().j << std::endl;
+    }*/
 }
