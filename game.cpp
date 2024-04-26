@@ -5,6 +5,18 @@
 #include <cstdlib>
 #include <limits>
 
+void print_board(std::vector<std::vector<char>> board)
+{
+    for (int i = 0; i < board.size(); i++)
+    {
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            std::cout << board[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
 void Game::GameLoop()
 {
     while (true)
@@ -17,7 +29,6 @@ void Game::GameLoop()
 void Game::process_test_case()
 {
     get_board();
-    // print_board();
     get_options();
     board.clear();
 }
@@ -77,6 +88,36 @@ void Game::get_options()
         }
     }
 
+    else if (option == "IS_BOARD_POSSIBLE")
+    {
+        if (!board_is_correct)
+            std::cout << "NO\n\n";
+        else
+        {
+            if (check_if_board_possible())
+                std::cout << "YES\n\n";
+            else
+                std::cout << "NO\n\n";
+        }
+    }
+
+    else if (option == "CAN_RED_WIN_IN_1_MOVE_WITH_NAIVE_OPPONENT")
+    {
+        for (int p = 0; p < 3; p++)
+            std::getline(std::cin, option);
+        
+        if (!board_is_correct)
+        {
+            for (int i = 0; i < 4; i++)
+                std::cout << "NO\n";
+            std::cout << "\n";
+        }
+        else
+        {
+            winning_options();
+        }
+    }
+    red_player_win = blue_player_win = false;
     std::cin.clear();
 }
 
@@ -119,18 +160,6 @@ void Game::get_board()
         if (characters.size())
             board.push_back(characters);
         beginning = false;
-    }
-}
-
-void Game::print_board()
-{
-    for (size_t i = 0; i < board.size(); i++)
-    {
-        for (size_t j = 0; j < board[i].size(); j++)
-        {
-            std::cout << board[i][j] << " ";
-        }
-        std::cout << "\n";
     }
 }
 
@@ -178,6 +207,8 @@ bool Game::isPointVisited(int i, int j)
 
 void Game::check_if_red_win()
 {
+    arleady_visited.clear();
+    red_player_win = false;
     for (int i = 0; i < board.size(); i++)
     {
         for (int j = 0; j < board[i].size(); j++)
@@ -194,6 +225,7 @@ void Game::check_if_red_win()
 
 void Game::check_if_blue_win()
 {
+    arleady_visited.clear();
     blue_player_win = false;
     for (int i = 0; i < board.size(); i++)
     {
@@ -219,6 +251,7 @@ bool Game::check_blue_route(int i, int j)
 
     std::stack<Point> stack;
     stack.push(Point(i, j));
+    blue_route_length = 0;
 
     while (!stack.empty())
     {
@@ -226,6 +259,7 @@ bool Game::check_blue_route(int i, int j)
         stack.pop();
         int row = point.i, column = point.j;
         arleady_visited.push_back(Point(row, column));
+        blue_route_length++;
 
         if (blue_pawn_top_right(row, column))
             is_top_right = true;
@@ -233,10 +267,7 @@ bool Game::check_blue_route(int i, int j)
             is_bottom_left = true;
 
         if (is_top_right && is_bottom_left)
-        {
-            
             return true;
-        }
 
         // Check all neighbours squares
         check_neighbours(stack, row, column, 'b');
@@ -250,6 +281,8 @@ bool Game::check_red_route(int i, int j)
 
     std::stack<Point> stack;
     stack.push(Point(i, j));
+    red_route_length = 0;
+
     while (!stack.empty())
     {
         Point point = stack.top();
@@ -257,6 +290,7 @@ bool Game::check_red_route(int i, int j)
         int row = point.i, column = point.j;
 
         arleady_visited.push_back(Point(row, column));
+        red_route_length++;
 
         if (red_pawn_top_left(row, column))
             is_top_left = true;
@@ -264,10 +298,7 @@ bool Game::check_red_route(int i, int j)
             is_bottom_right = true;
 
         if (is_bottom_right && is_top_left)
-        {
-            
             return true;
-        }
 
         // Check all neighbours squares
         check_neighbours(stack, row, column, 'r');
@@ -279,7 +310,6 @@ void Game::check_neighbours(std::stack<Point> &stack, int row, int column, char 
 {
     using std::cout;
     using std::endl;
-    //int init_size = stack.size();
     
     // middle row
     if (row == board.size() / 2)
@@ -390,9 +420,69 @@ void Game::check_neighbours(std::stack<Point> &stack, int row, int column, char 
         if (row + 2 < board.size() && column - 1 >= 0 && column - 1 < board[row + 2].size() && board[row + 2][column - 1] == ch && !isPointVisited(row + 2, column - 1))
             stack.push(Point(row + 2, column - 1));
     }
-    int new_size = stack.size();
-    /*if (new_size != init_size)
+}
+bool Game::check_if_board_possible()
+{
+    blue_player_win = red_player_win = false;
+    if (red_pawns == 0)
+        return true;
+
+    for (int i = 0; i < board.size(); i++)
     {
-        std::cout << "Point : " << stack.top().i << ", " << stack.top().j << std::endl;
-    }*/
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            if (board[i][j] == 'r')
+            {
+                board[i][j] = 'e';
+                check_if_red_win();
+                board[i][j] = 'r';
+                if (red_player_win)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    for (int i = 0; i < board.size(); i++)
+    {
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            if (board[i][j] == 'b')
+            {
+                board[i][j] = 'e';
+                check_if_blue_win();
+                board[i][j] = 'b';
+                if (blue_player_win)
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+void print_result(bool is_true)
+{
+    if (is_true) std::cout << "YES\n";
+    else std::cout << "NO\n";
+}
+
+void Game::winning_options()
+{
+    blue_player_win = red_player_win = false;
+    bool red_in_1_move = false, red_in_2_moves = false, blue_in_1_move = false, blue_in_2_moves = false;
+
+    check_if_red_win();
+    check_if_blue_win();
+    if (red_player_win | blue_player_win)
+    {
+        std::cout << "NO\n";
+        return;     
+    }
+
+    print_result(red_in_1_move);
+    print_result(blue_in_1_move);
+    print_result(red_in_2_moves);
+    print_result(blue_in_2_moves);
 }
