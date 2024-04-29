@@ -105,7 +105,7 @@ void Game::get_options()
     {
         for (int p = 0; p < 3; p++)
             std::getline(std::cin, option);
-        
+
         if (!board_is_correct)
         {
             for (int i = 0; i < 4; i++)
@@ -197,7 +197,7 @@ void Game::get_pawns_number()
 
 bool Game::isPointVisited(int i, int j)
 {
-    for (const auto &p : arleady_visited)
+    for (const auto& p : arleady_visited)
     {
         if (p.i == i && p.j == j)
             return true;
@@ -306,11 +306,11 @@ bool Game::check_red_route(int i, int j)
     return false;
 }
 
-void Game::check_neighbours(std::stack<Point> &stack, int row, int column, char ch)
+void Game::check_neighbours(std::stack<Point>& stack, int row, int column, char ch)
 {
     using std::cout;
     using std::endl;
-    
+
     // middle row
     if (row == board.size() / 2)
     {
@@ -424,40 +424,49 @@ void Game::check_neighbours(std::stack<Point> &stack, int row, int column, char 
 bool Game::check_if_board_possible()
 {
     blue_player_win = red_player_win = false;
-    if (red_pawns == 0)
-        return true;
 
-    for (int i = 0; i < board.size(); i++)
+    check_if_red_win();
+    if (red_player_win && red_pawns == blue_pawns)
+        return false;
+    check_if_blue_win();
+    if (blue_player_win && blue_pawns != red_pawns)
+        return false;
+
+    if (red_player_win)
     {
-        for (int j = 0; j < board[i].size(); j++)
+        for (int i = 0; i < board.size(); i++)
         {
-            if (board[i][j] == 'r')
+            for (int j = 0; j < board[i].size(); j++)
             {
-                board[i][j] = 'e';
-                check_if_red_win();
-                board[i][j] = 'r';
-                if (red_player_win)
+                if (board[i][j] == 'r')
                 {
-                    return false;
+                    board[i][j] = 'e';
+                    check_if_red_win();
+                    board[i][j] = 'r';
+                    if (!red_player_win) return true;
                 }
+                
             }
         }
+        return false;
     }
-    for (int i = 0; i < board.size(); i++)
+    if (blue_player_win)
     {
-        for (int j = 0; j < board[i].size(); j++)
+        for (int i = 0; i < board.size(); i++)
         {
-            if (board[i][j] == 'b')
+            for (int j = 0; j < board[i].size(); j++)
             {
-                board[i][j] = 'e';
-                check_if_blue_win();
-                board[i][j] = 'b';
-                if (blue_player_win)
+                if (board[i][j] == 'b')
                 {
-                    return false;
+                    board[i][j] = 'e';
+                    check_if_blue_win();
+                    board[i][j] = 'b';
+                    if (!blue_player_win) return true;
                 }
+
             }
         }
+        return false;
     }
     return true;
 }
@@ -475,10 +484,10 @@ void Game::winning_options()
 
     check_if_red_win();
     check_if_blue_win();
-    if (red_player_win | blue_player_win)
+    if (red_player_win || blue_player_win)
     {
         std::cout << "NO\n";
-        return;     
+        return;
     }
 
     print_result(red_in_1_move);
