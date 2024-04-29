@@ -103,8 +103,9 @@ void Game::get_options()
 
     else if (option == "CAN_RED_WIN_IN_1_MOVE_WITH_NAIVE_OPPONENT")
     {
+        std::string t;
         for (int p = 0; p < 3; p++)
-            std::getline(std::cin, option);
+            std::getline(std::cin, t);
 
         if (!board_is_correct)
         {
@@ -114,7 +115,12 @@ void Game::get_options()
         }
         else
         {
-            winning_options();
+            bool red_in_1_move = false, red_in_2_moves = false, blue_in_1_move = false, blue_in_2_moves = false;
+            winning_options(red_in_1_move, red_in_2_moves, blue_in_1_move, blue_in_2_moves);
+            print_result(red_in_1_move);
+            print_result(blue_in_1_move);
+            print_result(red_in_2_moves);
+            print_result(blue_in_2_moves);
         }
     }
     red_player_win = blue_player_win = false;
@@ -445,7 +451,7 @@ bool Game::check_if_board_possible()
                     board[i][j] = 'r';
                     if (!red_player_win) return true;
                 }
-                
+
             }
         }
         return false;
@@ -471,27 +477,161 @@ bool Game::check_if_board_possible()
     return true;
 }
 
-void print_result(bool is_true)
+void Game::print_result(bool is_true)
 {
     if (is_true) std::cout << "YES\n";
     else std::cout << "NO\n";
 }
 
-void Game::winning_options()
+void Game::winning_options(bool& red_in_1_move, bool& red_in_2_moves, bool& blue_in_1_move, bool& blue_in_2_moves)
 {
     blue_player_win = red_player_win = false;
-    bool red_in_1_move = false, red_in_2_moves = false, blue_in_1_move = false, blue_in_2_moves = false;
 
     check_if_red_win();
     check_if_blue_win();
-    if (red_player_win || blue_player_win)
+    int free_cells = this->height * this->width - this->blue_pawns - this->red_pawns;
+    if (red_player_win || blue_player_win || free_cells == 0)
+        return;
+
+    if (red_pawns == blue_pawns)
     {
-        std::cout << "NO\n";
+        check_future_win_red(free_cells, red_in_1_move, red_in_2_moves);
+        check_future_win_blue(free_cells - 1, blue_in_1_move, blue_in_2_moves);
+    }
+    
+    else if (red_pawns > blue_pawns)
+    {
+        check_future_win_blue(free_cells, blue_in_1_move, blue_in_2_moves);
+        check_future_win_red(free_cells - 1, red_in_1_move, red_in_2_moves);
+    }
+}
+
+void Game::check_future_win_red(int free_cells, bool& red_in_1_move, bool& red_in_2_moves)
+{
+    if (free_cells == 0)
+    {
+        red_in_1_move = red_in_2_moves = false;
         return;
     }
 
-    print_result(red_in_1_move);
-    print_result(blue_in_1_move);
-    print_result(red_in_2_moves);
-    print_result(blue_in_2_moves);
+    for (int i = 0; i < board.size(); i++)
+    {
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            if (board[i][j] == 'e')
+            {
+                board[i][j] = 'r';
+                check_if_red_win();
+                if (red_player_win)
+                {
+                    red_player_win = false;
+                    red_in_1_move = true;
+                    if (free_cells < 3)
+                    {
+                        red_in_2_moves = false;
+                        board[i][j] = 'e';
+                        return;
+                    }
+                    else
+                    {
+                        red_in_2_moves = true;
+                        board[i][j] = 'e';
+                        return;
+                    }
+                }
+
+                if (red_in_2_moves)
+                {
+                    board[i][j] = 'e';
+                    continue;
+                }
+
+                for (int k = 0; k < board.size(); k++)
+                {
+                    for (int h = 0; h < board[k].size(); h++)
+                    {
+                        if (board[k][h] == 'e')
+                        {
+                            board[k][h] = 'r';
+                            check_if_red_win();
+                            if (red_player_win)
+                            {
+                                red_player_win = false;
+                                red_in_2_moves = true;
+                                board[i][j] = board[k][h] = 'e';
+                                break;
+                            }
+                            board[k][h] = 'e';
+                        }
+                    }
+                }
+                board[i][j] = 'e';
+            }
+        }
+    }
+}
+
+void Game::check_future_win_blue(int free_cells, bool& blue_in_1_move, bool& blue_in_2_moves)
+{
+    if (free_cells == 0)
+    {
+        blue_in_1_move = blue_in_2_moves = false;
+        return;
+    }
+
+    for (int i = 0; i < board.size(); i++)
+    {
+        for (int j = 0; j < board[i].size(); j++)
+        {
+            if (board[i][j] == 'e')
+            {
+                board[i][j] = 'b';
+                check_if_blue_win();
+                if (blue_player_win)
+                {
+                    blue_player_win = false;
+                    blue_in_1_move = true;
+                    if (free_cells < 3)
+                    {
+                        blue_in_2_moves = false;
+                        board[i][j] = 'e';
+                        return;
+                    }
+                    else
+                    {
+                        blue_in_2_moves = true;
+                        board[i][j] = 'e';
+                        return;
+                    }
+                }
+
+                if (blue_in_2_moves)
+                {
+                    board[i][j] = 'e';
+                    continue;
+                }
+
+                for (int k = 0; k < board.size(); k++)
+                {
+                    for (int h = 0; h < board[k].size(); h++)
+                    {
+                        if (board[k][h] == 'e')
+                        {
+                            board[k][h] = 'b';
+                            check_if_blue_win();
+                            if (blue_player_win)
+                            {
+                                blue_player_win = false;
+                                blue_in_2_moves = true;
+                                board[i][j] = board[k][h] = 'e';
+                                break;
+                            }
+                            board[k][h] = 'e';
+                        }
+                    }
+                }
+                board[i][j] = 'e';
+            }
+        }
+    }
 }

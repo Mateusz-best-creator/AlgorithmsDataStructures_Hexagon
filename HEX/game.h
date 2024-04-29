@@ -43,11 +43,9 @@ public:
     bool check_blue_route(int, int);
     bool check_red_route(int i, int j);
 
-    void check_neighbours(std::stack<Point> &, int, int, char);
+    void check_neighbours(std::stack<Point>&, int, int, char);
 
     bool check_if_board_possible();
-
-    void min_max_search(char, char, bool&, bool&, bool&, bool&);
 
     template <typename T, typename P>
     T remove_if(T beg, T end, P pred)
@@ -64,6 +62,8 @@ public:
     bool red_pawn_top_left(int i, int j) const { return i <= board.size() / 2 && j == 0; }
     bool red_pawn_bottom_right(int i, int j) const { return i >= board.size() / 2 && j == board[i].size() - 1; }
 
-    void winning_options();
-    void generate_move();
+    void winning_options(bool&, bool&, bool&, bool&);
+    void print_result(bool is_true);
+    void check_future_win_red(int, bool& red_in_1_move, bool& red_in_2_moves);
+    void check_future_win_blue(int free_cells, bool& blue_in_1_move, bool& blue_in_2_moves);
 };
