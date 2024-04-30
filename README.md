@@ -12,3 +12,10 @@ Project 2 focuses on implementing a Hex game and performing various checks and o
 - Determining the number of pawns on the board.
 - Identifying the winning player.
 - Checking if some player missed winning chance in the future.
+
+## Proejct 3: Graphs
+
+### OVerview
+
+
+### Features
