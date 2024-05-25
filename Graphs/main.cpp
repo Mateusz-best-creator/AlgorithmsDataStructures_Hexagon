@@ -1,12 +1,9 @@
 #include <iostream>
-#include <vector>
-#include <map>
-#include <algorithm>
-
 #include "task.hpp"
 
 int main()
 {
+    std::ios_base::sync_with_stdio(false);
     int k;
     std::cin >> k;
     Task task;
