@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <stack>
+#include <queue>
 
 void Task::perform_task()
 {
@@ -12,6 +13,10 @@ void Task::perform_task()
     this->liczba_skladowych_spojnosci();
     this->wynik_dwudzielnosc_grafu = true;
     this->dwudzielnosc_grafu();
+    this->wynik_acentrycznosc.clear();
+    this->acentrycznosc_wierzcholkow();
+    this->wynik_podgrafy_c4 = 0;
+    this->podgrafy_c4();
     this->output();
 }
 
@@ -51,12 +56,20 @@ void Task::get_graph()
     // }
 }
 
+void Task::zadania()
+{
+    for (auto& pair : graph_map)
+    {
+        
+    }
+}
+
 void Task::liczba_skladowych_spojnosci()
 {
     std::map<int, bool> visited;
     std::stack<int> stack;
 
-    for (auto pair : graph_map)
+    for (auto& pair : graph_map)
     {
         if (!visited[pair.first])
         {
@@ -90,7 +103,7 @@ void Task::dwudzielnosc_grafu()
     std::map<int, char> kolory;
     std::stack<int> stack;
 
-    for (auto pair : graph_map)
+    for (auto& pair : graph_map)
     {
         int start_node = pair.first;
         if (kolory.count(start_node) == 0)
@@ -123,6 +136,91 @@ void Task::dwudzielnosc_grafu()
         }
     }
 }
+void Task::acentrycznosc_wierzcholkow()
+{
+    for (const auto& pair : graph_map)
+    {
+        int current_node = pair.first;
+        std::map<int, bool> visited;
+        std::queue<int> queue;
+        std::map<int, int> depth;
+
+        if (pair.second.empty()) 
+        {
+            wynik_acentrycznosc.push_back(0);
+            continue;
+        }
+
+        int max_depth = 0;
+
+        queue.push(current_node);
+        visited[current_node] = true;
+        depth[current_node] = 0;
+
+        while (!queue.empty()) 
+        {
+            int node = queue.front();
+            queue.pop();
+
+            for (int neighbor : graph_map[node]) 
+            {
+                if (!visited[neighbor]) 
+                {
+                    queue.push(neighbor);
+                    visited[neighbor] = true;
+                    depth[neighbor] = depth[node] + 1;
+                    if (depth[neighbor] > max_depth)
+                        max_depth = depth[neighbor];
+                }
+            }
+        }
+        wynik_acentrycznosc.push_back(max_depth);
+    }
+}
+
+void Task::podgrafy_c4()
+{
+    for (auto& pair : graph_map)
+    {
+        // int start_node = pair.first;
+        // std::map<int, bool> visited_local;
+        // std::stack<int> stack;
+        // stack.push(start_node);
+        // 
+        // while (!stack.empty())
+        // {
+        //     int stack_node = stack.top();
+        //     std::cout << "Node = " << stack_node << std::endl;
+        //     if (visited_local.size() == 4)
+        //     {
+        //         std::cout << "STOP\n\n";
+        //         if (start_node == stack_node)
+        //             this->wynik_podgrafy_c4++;
+        //         break;
+        //     }
+
+        //     if (visited_local[stack_node])
+        //     {
+        //         continue;
+        //     }
+        //     visited_local[stack_node] = true;
+        //     stack.pop();
+
+        //     for (int i = 0; i < graph_map[stack_node].size(); i++)
+        //     {
+        //         int neighbor = graph_map[stack_node].at(i);
+        //         if (!visited_local[neighbor])
+        //             stack.push(neighbor);
+        //     }
+        // }
+    }
+    /*
+    każdy cykl dwukrotnie - przechodząc zgodnie z ruchem wskazówek zegara i przeciwnie. 
+    Dodatkowo każdy cykl zostanie policzony przez każdy z jego czterech wierzchołków. 
+    2 * 4 = 8
+    */
+    this->wynik_podgrafy_c4 /= 8;
+}
 
 void Task::output() const
 {
@@ -134,7 +232,11 @@ void Task::output() const
         std::cout << "T" << std::endl;
     else
         std::cout << "F" << std::endl;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < wynik_acentrycznosc.size(); i++)
+        std::cout << wynik_acentrycznosc.at(i) << " ";
+    std::cout << std::endl;
+    for (int i = 0; i < 5; i++)
         std::cout << "?" << std::endl;
+    // std::cout << wynik_podgrafy_c4 << std::endl;
     std::cout << wynik_dopelnienie_grafu << std::endl;
 }
