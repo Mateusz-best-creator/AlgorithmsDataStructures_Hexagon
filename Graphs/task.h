@@ -1,31 +1,32 @@
 #pragma once
 
-#include <vector>
+#include "vector.h"
+#include "stack.h"
 #include <map>
-#include <queue>
-#include <stack>
 
 class Task
 {
 private:
     long long wynik_dopelnienie_grafu;
     int wynik_podgrafy_c4;
-    std::vector<int> wynik_degree_sequence;
-    std::map<int, std::vector<int>> graph_map;
+    Vector<int> wynik_degree_sequence;
+    std::map<int, Vector<int>> graph_map;
+    Vector<int>* graph_map_2 = nullptr;
     int wynik_liczba_skladowych_spojnosci;
     bool wynik_dwudzielnosc_grafu;
-    std::vector<int> wynik_acentrycznosc;
 
     char czerwony = 'r';
     char niebieski = 'b';
 
 public:
     Task() = default;
+    ~Task()
+    {
+        delete[] graph_map_2;
+    }
     void perform_task();
-    void liczba_skladowych_spojnosci(const std::pair<int, std::vector<int>>& pair, std::map<int, bool>& visited, std::stack<int>& stack);
-    void dwudzielnosc_grafu(const std::pair<int, std::vector<int>>& pair, std::map<int, char>& kolory, std::stack<int>& stack);
-    void acentrycznosc_wierzcholkow(const std::pair<int, std::vector<int>>& pair);
-    void podgrafy_c4();
+    void liczba_skladowych_spojnosci(const std::pair<int, Vector<int>>& pair, std::map<int, bool>& visited, Stack<int>& stack);
+    void dwudzielnosc_grafu(const std::pair<int, Vector<int>>& pair, std::map<int, char>& kolory, Stack<int>& stack);
 
     void get_graph();
     void zadania();
