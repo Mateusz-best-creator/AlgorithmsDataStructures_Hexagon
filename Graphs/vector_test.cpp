@@ -29,4 +29,6 @@ int main()
         }
         cout << endl;
     }
+
+    cout << vector.contain(-10) << endl;
 }

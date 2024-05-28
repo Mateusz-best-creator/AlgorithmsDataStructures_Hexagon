@@ -6,7 +6,11 @@
 void Task::perform_task()
 {
     wynik_degree_sequence.clear();
-    graph_map.clear();
+    if (this->n != -1)
+    {
+        for (int i = 0; i < this->n; i++)
+            graph_map[i].clear();
+    }
     this->get_graph();
     this->wynik_liczba_skladowych_spojnosci = 0;
     this->wynik_dwudzielnosc_grafu = true;
@@ -20,9 +24,10 @@ void Task::get_graph()
 {
     long long n;
     scanf("%lld", &n);
+    this->n = n;
     long long krawedzie = 0;
-
-    graph_map_2 = new Vector<int>[n];
+    
+    graph_map = new Vector<int>[n];
 
     for (int i = 0; i < n; i++)
     {
@@ -33,14 +38,12 @@ void Task::get_graph()
         {
             int value;
             scanf("%d", &value);
-            graph_map_2[i].push_back(value);
-            graph_map[i+1].push_back(value);
+            graph_map[i].push_back(value - 1);
             krawedzie++;
         }
         if (amount == 0)
         {
-            graph_map_2[i];
-            graph_map[i+1];
+            graph_map[i];
         }
     }
     krawedzie /= 2;
@@ -61,52 +64,51 @@ void Task::get_graph()
 
 void Task::zadania()
 {
-    std::map<int, bool> spojnosci_visited;
+    // std::map<int, bool> spojnosci_visited;
+    Vector<int> spojnosci_visited;
     Stack<int> spojnosci_stack;
     
-    std::map<int, char> dwudzielnosc_kolory;
+    // std::map<int, char> dwudzielnosc_kolory;
+    Vector<int> dwudzielnosc_kolory(n, 'e');
     Stack<int> dwudzielnosc_stack;
 
-    for (auto& pair : graph_map)
+    for (int i = 0; i < this->n; i++)
     {
-        this->liczba_skladowych_spojnosci(pair, spojnosci_visited, spojnosci_stack);
-        this->dwudzielnosc_grafu(pair, dwudzielnosc_kolory, dwudzielnosc_stack);
+        this->liczba_skladowych_spojnosci(i, graph_map[i], spojnosci_visited, spojnosci_stack);
+        this->dwudzielnosc_grafu(i, graph_map[i], dwudzielnosc_kolory, dwudzielnosc_stack);
         // this->podgrafy_c4(pair);
     }
 }
 
-void Task::liczba_skladowych_spojnosci(const std::pair<int, Vector<int>>& pair, std::map<int, bool>& visited, Stack<int>& stack)
+void Task::liczba_skladowych_spojnosci(int node_index, Vector<int>& node_values, Vector<int>& visited, Stack<int>& stack)
 {
-    if (!visited[pair.first])
+    if (!visited.contain(node_index))
     {
-        stack.push(pair.first);
+        stack.push(node_index);
         while (!stack.empty())
         {
             int stack_node = stack.top();
             stack.pop();
-            if (visited[stack_node])
+            if (visited.contain(stack_node))
                 continue;
-            visited[stack_node] = true;
+            visited.push_back(stack_node);
             for (int i = 0; i < graph_map[stack_node].size(); i++)
             {
-                int neighbor = graph_map[stack_node].at(i);
-                if (!visited[neighbor])
-                {
+                int neighbor = graph_map[stack_node][i];
+                if (!visited.contain(neighbor))
                     stack.push(neighbor);
-                }
             }
         }
         wynik_liczba_skladowych_spojnosci++;
     }
 }
 
-void Task::dwudzielnosc_grafu(const std::pair<int, Vector<int>>& pair, std::map<int, char>& kolory, Stack<int>& stack)
+void Task::dwudzielnosc_grafu(int node_index, Vector<int>& node_values, Vector<int>& kolory, Stack<int>& stack)
 {
-    int start_node = pair.first;
-    if (kolory.count(start_node) == 0)
+    if (kolory[node_index] == 'e')
     {
-        stack.push(start_node);
-        kolory[start_node] = czerwony;
+        stack.push(node_index);
+        kolory[node_index] = czerwony;
 
         while (!stack.empty())
         {
@@ -117,8 +119,8 @@ void Task::dwudzielnosc_grafu(const std::pair<int, Vector<int>>& pair, std::map<
 
             for (int i = 0; i < graph_map[stack_node].size(); i++)
             {
-                int neighbor = graph_map[stack_node].at(i);
-                if (kolory.count(neighbor) == 0)
+                int neighbor = graph_map[stack_node][i];
+                if (kolory[neighbor] == 'e')
                 {
                     kolory[neighbor] = przeciwny_kolor;
                     stack.push(neighbor);

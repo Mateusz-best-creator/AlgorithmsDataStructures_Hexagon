@@ -25,9 +25,9 @@ public:
         if (m_Size >= m_Capacity)
         {
             if (m_Capacity == 0)
-                ReAlloc(2);
+                ReAlloc(5);
             else
-                ReAlloc(m_Capacity * 2);
+                ReAlloc(m_Capacity * 3);
         }
         m_Data[m_Size++] = value;
     }

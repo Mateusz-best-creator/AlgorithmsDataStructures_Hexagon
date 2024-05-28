@@ -76,6 +76,15 @@ public:
         m_size = init_size;
     }
 
+    Vector(size_t init_size, T default_value)
+    {
+        m_max_size = init_size > 0 ? init_size : 1;
+        m_data = new T[m_max_size];
+        m_size = init_size;
+        for (size_t i = 0; i < m_size; i++)
+            m_data[i] = default_value;
+    }
+
     Vector(const Vector& other)
     {
         m_max_size = other.get_m_max_size();
@@ -126,6 +135,14 @@ public:
             m_data = m_data_new;
         }
         m_data[m_size++] = value;
+    }
+
+    bool contain(T value) const
+    {
+        for (size_t i = 0; i < m_size; i++)
+            if (m_data[i] == value)
+                return true;
+        return false;
     }
 
     void clear()
